@@ -1,3 +1,5 @@
 results/
 samples/
 example-src/
+.cproject
+.project
