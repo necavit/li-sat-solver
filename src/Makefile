@@ -1,7 +1,7 @@
 SRC_DIR=./cpp
 BIN_DIR=./bin
 CC=g++
-CFLAGS=-c -O3
+CFLAGS=-c -O3 -std=c++0x
 
 sat: sat.o
 	$(CC) sat.o -o $(BIN_DIR)/sat
