@@ -1,6 +1,13 @@
+# binaries are ignored
 src/bin/
-results/
+
+# sample problems and results
 samples/
+results/
+
+# the original example source, provided by our teachers
 example-src/
+
+# eclipse related stuff
 .cproject
 .project
