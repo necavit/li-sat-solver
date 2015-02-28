@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
-#include "ModelValues.hpp"
-#include "Model.hpp"
 using namespace std;
 
+#define UNDEFINED -1
+#define TRUE 1
+#define FALSE 0
 #define DECISION_MARK 0
 
 uint numVariables;
@@ -15,7 +16,7 @@ uint decisions;
 vector<vector<int> > clauses;
 vector<vector<int> > positiveClauses;
 vector<vector<int> > negativeClauses;
-Model *model;
+vector<int> model;
 vector<int> modelStack;
 uint indexOfNextLitToPropagate;
 uint decisionLevel;
@@ -57,11 +58,49 @@ void initializeWithParsedInput() {
 	}
 
 	// Initialize the remaining necessary variables
-	model = new Model(numVariables);
+	model.resize(numVariables + 1, UNDEFINED);
 	indexOfNextLitToPropagate = 0;
 	decisionLevel = 0;
 	propagations = 0;
 	decisions = 0;
+}
+
+/**
+ * The current interpretation (model) is updated with the appropriate value
+ * that will make the passed literal become true in the clause where it appeared.
+ * The model stack is also increased, pushing the new value on top.
+ *
+ * @param literal the literal that will become true after the model update
+ */
+int valueForLiteral(int literal) {
+	if (literal >= 0) {
+		return model[literal];
+	}
+	else {
+		if (model[-literal] == UNDEFINED) {
+			return UNDEFINED;
+		}
+		else {
+			return 1 - model[-literal];
+		}
+	}
+}
+
+/**
+ * The current interpretation (model) is updated with the appropriate value
+ * that will make the passed literal become true in the clause where it appeared.
+ * The model stack is also increased, pushing the new value on top.
+ *
+ * @param literal the literal that will become true after the model update
+ */
+void setLiteralToTrue(int literal) {
+	modelStack.push_back(literal);
+	if (literal > 0) {
+		model[literal] = TRUE;
+	}
+	else {
+		model[-literal] = FALSE;
+	}
 }
 
 bool propagateGivesConflict() {
@@ -88,7 +127,7 @@ bool propagateGivesConflict() {
 
 			//traverse the clause
 			for (uint k = 0; not isSomeLiteralTrue and k < clause.size(); ++k) {
-				int value = model->valueForLiteral(clause[k]);
+				int value = valueForLiteral(clause[k]);
 				if (value == TRUE) {
 					isSomeLiteralTrue = true;
 				}
@@ -101,7 +140,7 @@ bool propagateGivesConflict() {
 				return true; // conflict! all lits false
 			}
 			else if (not isSomeLiteralTrue and undefinedLiterals == 1) {
-				model->setLiteralToTrue(lastUndefinedLiteral);
+				setLiteralToTrue(lastUndefinedLiteral);
 			}
 		}
 	}
@@ -113,7 +152,7 @@ void backtrack() {
 	int literal = 0;
 	while (modelStack[i] != DECISION_MARK) { // 0 is the  mark
 		literal = modelStack[i];
-		model->setVariableUndefined(abs(literal));
+		model[abs(literal)] = UNDEFINED;
 		modelStack.pop_back();
 		--i;
 	}
@@ -121,7 +160,7 @@ void backtrack() {
 	modelStack.pop_back(); // remove the  mark
 	--decisionLevel;
 	indexOfNextLitToPropagate = modelStack.size();
-	model->setLiteralToTrue(-literal);  // reverse last decision
+	setLiteralToTrue(-literal);  // reverse last decision
 }
 
 
@@ -139,7 +178,7 @@ int getNextDecisionLiteral() {
 	//TODO enhance this heuristic (implement activity based decision)
 	// stupid heuristic:
 	for (uint i = 1; i <= numVariables; ++i) {
-		if (model->isVariableUndefined(i)) {
+		if (model[i] == UNDEFINED) {
 			return i;  // returns first undefined variable
 		}
 	}
@@ -155,7 +194,7 @@ void checkmodel() {
 	for (int i = 0; i < numClauses; ++i) {
 		bool someTrue = false;
 		for (int j = 0; not someTrue and j < clauses[i].size(); ++j) {
-			someTrue = (model->valueForLiteral(clauses[i][j]) == TRUE);
+			someTrue = (valueForLiteral(clauses[i][j]) == TRUE);
 		}
 		if (not someTrue) {
 			cout << "Error in model, clause is not satisfied:";
@@ -203,7 +242,7 @@ void executeDPLL() {
 		modelStack.push_back(DECISION_MARK);  // push mark indicating new
 		++indexOfNextLitToPropagate;
 		++decisionLevel;
-		model->setLiteralToTrue(decisionLit); // now push decisionLit on top of the mark
+		setLiteralToTrue(decisionLit); // now push decisionLit on top of the mark
 	}
 }
 
@@ -216,7 +255,7 @@ void checkUnitClauses() {
 	for (uint i = 0; i < numClauses; ++i) {
 		if (clauses[i].size() == 1) {
 			int literal = clauses[i][0];
-			int value = model->valueForLiteral(literal);
+			int value = valueForLiteral(literal);
 			if (value == FALSE) {
 				// This condition will only occur if at least a couple of unit clauses
 				//  exist with opposite literals (p and ¬p, for example). When the first
@@ -226,7 +265,7 @@ void checkUnitClauses() {
 				exitWithSatisfiability(false);
 			}
 			else if (value == UNDEFINED) {
-				model->setLiteralToTrue(literal);
+				setLiteralToTrue(literal);
 			}
 		}
 		//TODO could unit clauses be "deleted"? (at least avoid their traversal further on)
