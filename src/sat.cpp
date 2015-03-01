@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
@@ -55,8 +56,8 @@ void initializeWithParsedInput() {
 	clauses.resize(numClauses);
 
 	// Initialize positive and negative appearances
-	positiveClauses.resize(numVariables);
-	negativeClauses.resize(numVariables);
+	positiveClauses.resize(numVariables + 1);
+	negativeClauses.resize(numVariables + 1);
 
 	// Read clauses
 	for (uint clause = 0; clause < numClauses; ++clause) {

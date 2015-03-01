@@ -1,11 +1,11 @@
 # binaries are ignored
-src/bin/
+bin/
 
 # sample problems and results
-samples/
+sample_problems/
 results/
 
-# the original example source, provided by our teachers
+# the original example source, as provided by our teachers
 example-src/
 
 # eclipse related stuff
