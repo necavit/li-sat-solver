@@ -38,6 +38,13 @@ uint propagations;
 uint decisions;
 
 /**
+ * Returns the variable that this literal represents
+ */
+inline uint var(int literal) {
+	return abs(literal);
+}
+
+/**
  * Reads the input problem file from the stdin stream and initializes
  * any remaining necessary data structures and variables.
  */
@@ -68,10 +75,10 @@ void initializeWithParsedInput() {
 
 			// add to the list of positive-negative literals
 			if (literal > 0) {
-				positiveClauses[abs(literal)].push_back(clause);
+				positiveClauses[var(literal)].push_back(clause);
 			}
 			else {
-				negativeClauses[abs(literal)].push_back(clause);
+				negativeClauses[var(literal)].push_back(clause);
 			}
 		}
 	}
@@ -91,11 +98,7 @@ void initializeWithParsedInput() {
 }
 
 /**
- * The current interpretation (model) is updated with the appropriate value
- * that will make the passed literal become true in the clause where it appeared.
- * The model stack is also increased, pushing the new value on top.
- *
- * @param literal the literal that will become true after the model update
+ * TODO comment
  */
 int valueForLiteral(int literal) {
 //TODO could this be faster? there is a lot of if-else branching here!
@@ -136,6 +139,7 @@ void setLiteralToTrue(int literal) {
  * @param literal the literal which activity is to be updated
  */
 void updateActivityForLiteral(int literal) {
+	//cout << "CONFLICT for literal: " << literal << endl;
 	//update the activity increment if necessary (every X conflicts)
 	++conflicts;
 	if ((conflicts % activityIncrementUpdateRate) == 0) {
@@ -144,7 +148,7 @@ void updateActivityForLiteral(int literal) {
 
 	//update the activity of the variable (we are not distinguishing between positive
 	// and negative literals here)
-	int variable = abs(literal);
+	int variable = var(literal);
 	activity[variable] += activityIncrement;
 }
 
@@ -159,12 +163,15 @@ bool propagateGivesConflict() {
 		++propagations; //profiling purposes only
 
 		//traverse only positive/negative appearances
+		//cout << "PROPAGATION: propagating literal: " << literalToPropagate << endl;
 		vector<int> clausesToPropagate = literalToPropagate > 0 ?
-				positiveClauses[abs(literalToPropagate)] :
-				negativeClauses[abs(literalToPropagate)];
+				negativeClauses[var(literalToPropagate)] :
+				positiveClauses[var(literalToPropagate)];
 
 		//traverse the clauses
 		for (uint i = 0; i < clausesToPropagate.size(); ++i) {
+			//cout << "PROPAGATION: propagating literal " << literalToPropagate << " in clause: " << clausesToPropagate[i] << endl;
+
 			//retrieve the next clause
 			vector<int> clause = clauses[clausesToPropagate[i]];
 
@@ -173,8 +180,10 @@ bool propagateGivesConflict() {
 			int undefinedLiterals = 0;
 			int lastUndefinedLiteral = 0;
 
+			//cout <<"PROPAGATION: propagating clause: ";
 			//traverse the clause
-			for (uint k = 0; not isSomeLiteralTrue and k < clause.size(); ++k) {
+			for (uint k = 0; /* FIXME uncomment this: not isSomeLiteralTrue and */k < clause.size(); ++k) {
+				//cout << clause[k] << "  ";
 				int value = valueForLiteral(clause[k]);
 				if (value == TRUE) {
 					isSomeLiteralTrue = true;
@@ -184,6 +193,7 @@ bool propagateGivesConflict() {
 					lastUndefinedLiteral = clause[k];
 				}
 			}
+			//cout << endl;
 			if (not isSomeLiteralTrue and undefinedLiterals == 0) {
 				// A conflict has been found! All literals are false!
 				updateActivityForLiteral(literalToPropagate);
@@ -194,6 +204,7 @@ bool propagateGivesConflict() {
 				//  remaining in its clause that is undefined and all of the other literals
 				//  of the clause are false
 				// With the propagation, this literal is added to the stack, too!
+				//cout << "UNIT PROPAGATION: the following literal is propagated by the current propagating literal: " << lastUndefinedLiteral << endl;
 				setLiteralToTrue(lastUndefinedLiteral);
 			}
 		}
@@ -208,7 +219,7 @@ void backtrack() {
 	int literal = 0;
 	while (modelStack[i] != DECISION_MARK) { // 0 is the  mark
 		literal = modelStack[i];
-		model[abs(literal)] = UNDEFINED;
+		model[var(literal)] = UNDEFINED;
 		modelStack.pop_back();
 		--i;
 	}
@@ -235,6 +246,7 @@ int getNextDecisionLiteral() {
 	for (uint i = 1; i <= numVariables; ++i) {
 		// check only undefined variables
 		if (model[i] == UNDEFINED) {
+			//cout << i << "  variable is UNDEFINED" << endl;
 			// search for the most active variable
 			if (activity[i] >= maximumActivity) {
 				maximumActivity = activity[i];
@@ -243,6 +255,7 @@ int getNextDecisionLiteral() {
 		}
 	}
 	//return the most active variable or, if none is undefined, 0
+	//cout << "DECISION: variable: " << mostActiveVariable << endl;
 	return mostActiveVariable;
 }
 
