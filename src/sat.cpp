@@ -18,7 +18,7 @@ uint numClauses;
 
 /* Clauses and related data structures */
 vector<vector<int> > clauses;
-vector<vector<int> > positiveClauses;
+vector<vector<int> > positiveClauses; //TODO what about storing pointers instead of indexes? access time should be reduced...
 vector<vector<int> > negativeClauses;
 
 /* Model & backtrack stack */
@@ -30,8 +30,8 @@ uint decisionLevel;
 /* Heuristic related variables */
 vector<double> activity; //TODO would it be better to store activity for each literal? (instead of each variable) i.e., positive vs negative appearances
 double activityIncrement;
-int conflicts;
-int activityIncrementUpdateRate = 10; //TODO is this strategy right? which value is best suited?
+uint conflicts;
+int activityIncrementUpdateRate = 1000; //TODO is this strategy right? which value is best suited? IMPORTANT!!
 
 /* Statistics */
 uint propagations;
@@ -278,6 +278,7 @@ void checkmodel() {
  * @param satisfiable whether the problem was found to be satisfiable or not
  */
 void exitWithSatisfiability(bool satisfiable) {
+	cout << "conflicts: " << conflicts << "  decisions: " << decisions << "  propagations:" << propagations << endl;
 	if (satisfiable) {
 		checkmodel();
 		cout << "SATISFIABLE" << endl;
