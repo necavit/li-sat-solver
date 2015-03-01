@@ -139,7 +139,6 @@ void setLiteralToTrue(int literal) {
  * @param literal the literal which activity is to be updated
  */
 void updateActivityForLiteral(int literal) {
-	//cout << "CONFLICT for literal: " << literal << endl;
 	//update the activity increment if necessary (every X conflicts)
 	++conflicts;
 	if ((conflicts % activityIncrementUpdateRate) == 0) {
@@ -163,15 +162,12 @@ bool propagateGivesConflict() {
 		++propagations; //profiling purposes only
 
 		//traverse only positive/negative appearances
-		//cout << "PROPAGATION: propagating literal: " << literalToPropagate << endl;
 		vector<int> clausesToPropagate = literalToPropagate > 0 ?
 				negativeClauses[var(literalToPropagate)] :
 				positiveClauses[var(literalToPropagate)];
 
 		//traverse the clauses
 		for (uint i = 0; i < clausesToPropagate.size(); ++i) {
-			//cout << "PROPAGATION: propagating literal " << literalToPropagate << " in clause: " << clausesToPropagate[i] << endl;
-
 			//retrieve the next clause
 			vector<int> clause = clauses[clausesToPropagate[i]];
 
@@ -180,10 +176,8 @@ bool propagateGivesConflict() {
 			int undefinedLiterals = 0;
 			int lastUndefinedLiteral = 0;
 
-			//cout <<"PROPAGATION: propagating clause: ";
 			//traverse the clause
-			for (uint k = 0; /* FIXME uncomment this: not isSomeLiteralTrue and */k < clause.size(); ++k) {
-				//cout << clause[k] << "  ";
+			for (uint k = 0; not isSomeLiteralTrue and k < clause.size(); ++k) {
 				int value = valueForLiteral(clause[k]);
 				if (value == TRUE) {
 					isSomeLiteralTrue = true;
@@ -193,7 +187,6 @@ bool propagateGivesConflict() {
 					lastUndefinedLiteral = clause[k];
 				}
 			}
-			//cout << endl;
 			if (not isSomeLiteralTrue and undefinedLiterals == 0) {
 				// A conflict has been found! All literals are false!
 				updateActivityForLiteral(literalToPropagate);
@@ -204,7 +197,6 @@ bool propagateGivesConflict() {
 				//  remaining in its clause that is undefined and all of the other literals
 				//  of the clause are false
 				// With the propagation, this literal is added to the stack, too!
-				//cout << "UNIT PROPAGATION: the following literal is propagated by the current propagating literal: " << lastUndefinedLiteral << endl;
 				setLiteralToTrue(lastUndefinedLiteral);
 			}
 		}
@@ -246,7 +238,6 @@ int getNextDecisionLiteral() {
 	for (uint i = 1; i <= numVariables; ++i) {
 		// check only undefined variables
 		if (model[i] == UNDEFINED) {
-			//cout << i << "  variable is UNDEFINED" << endl;
 			// search for the most active variable
 			if (activity[i] >= maximumActivity) {
 				maximumActivity = activity[i];
@@ -255,7 +246,6 @@ int getNextDecisionLiteral() {
 		}
 	}
 	//return the most active variable or, if none is undefined, 0
-	//cout << "DECISION: variable: " << mostActiveVariable << endl;
 	return mostActiveVariable;
 }
 
