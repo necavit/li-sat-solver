@@ -8,6 +8,9 @@ results/
 # the original example source, as provided by our teachers
 example-src/
 
+# symlinked script, just for convenience
+sat
+
 # eclipse related stuff
 .cproject
 .project
