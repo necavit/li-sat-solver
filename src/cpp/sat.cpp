@@ -4,22 +4,37 @@
 #include <vector>
 using namespace std;
 
+//TODO object oriented SAT solver? performance issues? readability? maintainability? extensibility?
+
 #define UNDEFINED -1
 #define TRUE 1
 #define FALSE 0
 #define DECISION_MARK 0
 
+/* Global problem "sizes" */
 uint numVariables;
 uint numClauses;
-uint propagations;
-uint decisions;
+
+/* Clauses and related data structures */
 vector<vector<int> > clauses;
 vector<vector<int> > positiveClauses;
 vector<vector<int> > negativeClauses;
+
+/* Model & backtrack stack */
 vector<int> model;
 vector<int> modelStack;
 uint indexOfNextLitToPropagate;
 uint decisionLevel;
+
+/* Heuristic related variables */
+vector<double> activity; //TODO would it be better to store activity for each literal? (instead of each variable) i.e., positive vs negative appearances
+double activityIncrement;
+int conflicts;
+int activityIncrementUpdateRate = 10; //TODO is this strategy right? which value is best suited?
+
+/* Statistics */
+uint propagations;
+uint decisions;
 
 /**
  * Reads the input problem file from the stdin stream and initializes
@@ -47,7 +62,10 @@ void initializeWithParsedInput() {
 	for (uint clause = 0; clause < numClauses; ++clause) {
 		int literal;
 		while (cin >> literal and literal != 0) {
+			// add to the list of clauses
 			clauses[clause].push_back(literal);
+
+			// add to the list of positive-negative literals
 			if (literal > 0) {
 				positiveClauses[abs(literal)].push_back(clause);
 			}
@@ -58,9 +76,15 @@ void initializeWithParsedInput() {
 	}
 
 	// Initialize the remaining necessary variables
+		// model and backtrack stack
 	model.resize(numVariables + 1, UNDEFINED);
 	indexOfNextLitToPropagate = 0;
 	decisionLevel = 0;
+		// heuristic
+	activity.resize(numVariables + 1, 0.0);
+	activityIncrement = 1.0;
+	conflicts = 0;
+		// statistics
 	propagations = 0;
 	decisions = 0;
 }
@@ -73,6 +97,7 @@ void initializeWithParsedInput() {
  * @param literal the literal that will become true after the model update
  */
 int valueForLiteral(int literal) {
+//TODO could this be faster? there is a lot of if-else branching here!
 	if (literal >= 0) {
 		return model[literal];
 	}
@@ -103,27 +128,49 @@ void setLiteralToTrue(int literal) {
 	}
 }
 
+/**
+ * Updates the activity counter of the given literal. The activity increment
+ * applied is also updated, in order to give more importance to recent activity.
+ *
+ * @param literal the literal which activity is to be updated
+ */
+void updateActivityForLiteral(int literal) {
+	//update the activity increment if necessary (every X conflicts)
+	++conflicts;
+	if ((conflicts % activityIncrementUpdateRate) == 0) {
+		activityIncrement *= 1.1;
+	}
+
+	//update the activity of the variable (we are not distinguishing between positive
+	// and negative literals here)
+	int variable = abs(literal);
+	activity[variable] += activityIncrement;
+}
+
+//TODO document
 bool propagateGivesConflict() {
 	while (indexOfNextLitToPropagate < modelStack.size()) {
 		//retrieve the literal to "be propagated"
 		int literalToPropagate = modelStack[indexOfNextLitToPropagate];
-
+		//move forward the "pointer" to the next literal that will be propagated
 		++indexOfNextLitToPropagate;
+
 		++propagations; //profiling purposes only
 
-		//TODO traverse only positive/negative appearances!
+		//traverse only positive/negative appearances
 		vector<int> clausesToPropagate = literalToPropagate > 0 ?
 				positiveClauses[abs(literalToPropagate)] :
 				negativeClauses[abs(literalToPropagate)];
 
 		//traverse the clauses
 		for (uint i = 0; i < clausesToPropagate.size(); ++i) {
+			//retrieve the next clause
+			vector<int> clause = clauses[clausesToPropagate[i]];
+
+			//necessary variables initialization
 			bool isSomeLiteralTrue = false;
 			int undefinedLiterals = 0;
 			int lastUndefinedLiteral = 0;
-
-			//retrieve the next clause
-			vector<int> clause = clauses[clausesToPropagate[i]];
 
 			//traverse the clause
 			for (uint k = 0; not isSomeLiteralTrue and k < clause.size(); ++k) {
@@ -136,10 +183,16 @@ bool propagateGivesConflict() {
 					lastUndefinedLiteral = clause[k];
 				}
 			}
-			if (not isSomeLiteralTrue and undefinedLiterals == 0)	{
-				return true; // conflict! all lits false
+			if (not isSomeLiteralTrue and undefinedLiterals == 0) {
+				// A conflict has been found! All literals are false!
+				updateActivityForLiteral(literalToPropagate);
+				return true;
 			}
 			else if (not isSomeLiteralTrue and undefinedLiterals == 1) {
+				// The 'lastUndefinedLiteral' is "propagated", because it is the only one
+				//  remaining in its clause that is undefined and all of the other literals
+				//  of the clause are false
+				// With the propagation, this literal is added to the stack, too!
 				setLiteralToTrue(lastUndefinedLiteral);
 			}
 		}
@@ -147,7 +200,9 @@ bool propagateGivesConflict() {
 	return false;
 }
 
+//TODO document
 void backtrack() {
+	//TODO could this backtrack be faster? backjump? (non chronological backtrack)
 	uint i = modelStack.size() - 1;
 	int literal = 0;
 	while (modelStack[i] != DECISION_MARK) { // 0 is the  mark
@@ -174,15 +229,20 @@ void backtrack() {
  */
 int getNextDecisionLiteral() {
 	++decisions; //profiling purpose only
-
-	//TODO enhance this heuristic (implement activity based decision)
-	// stupid heuristic:
+	double maximumActivity = 0.0;
+	int mostActiveVariable = 0; // in case no variable is undefined, it will not be modified
 	for (uint i = 1; i <= numVariables; ++i) {
+		// check only undefined variables
 		if (model[i] == UNDEFINED) {
-			return i;  // returns first undefined variable
+			// search for the most active variable
+			if (activity[i] >= maximumActivity) {
+				maximumActivity = activity[i];
+				mostActiveVariable = i;
+			}
 		}
 	}
-	return 0; // reurns 0 when all literals are defined
+	//return the most active variable or, if none is undefined, 0
+	return mostActiveVariable;
 }
 
 /**
@@ -225,11 +285,14 @@ void exitWithSatisfiability(bool satisfiable) {
 	}
 }
 
+//TODO document
 void executeDPLL() {
 	// DPLL algorithm
 	while (true) {
 		while (propagateGivesConflict()) {
 			if (decisionLevel == 0) {
+				//there are no more possible decisions (variable assignments),
+				// which means that the problem is unsatisfiable
 				exitWithSatisfiability(false);
 			}
 			backtrack();
@@ -272,6 +335,10 @@ void checkUnitClauses() {
 	}
 }
 
+/**
+ * Main program. It reads the SAT problem from the stdin stream, checks unit clauses and
+ * executes the DPLL algorithm.
+ */
 int main() {
 	// Read the problem file (available at the stdin stream) and
 	//  initialize the rest of necessary variables
