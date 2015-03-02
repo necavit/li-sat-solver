@@ -29,7 +29,8 @@ uint indexOfNextLitToPropagate;
 uint decisionLevel;
 
 /* Heuristic related variables */
-vector<double> activity; //TODO would it be better to store activity for each literal? (instead of each variable) i.e., positive vs negative appearances
+vector<double> positiveLiteralActivity;
+vector<double> negativeLiteralActivity;
 double activityIncrement;
 uint conflicts;
 int activityIncrementUpdateRate = 1000; //TODO is this strategy right? which value is best suited? IMPORTANT!!
@@ -90,7 +91,8 @@ void initializeWithParsedInput() {
 	indexOfNextLitToPropagate = 0;
 	decisionLevel = 0;
 		// heuristic
-	activity.resize(numVariables + 1, 0.0);
+	positiveLiteralActivity.resize(numVariables + 1, 0.0);
+	negativeLiteralActivity.resize(numVariables + 1, 0.0);
 	activityIncrement = 1.0;
 	conflicts = 0;
 		// statistics
@@ -146,10 +148,15 @@ void updateActivityForLiteral(int literal) {
 		activityIncrement *= 1.1;
 	}
 
-	//update the activity of the variable (we are not distinguishing between positive
+	//update the activity of the literal (we are not distinguishing between positive
 	// and negative literals here)
-	int variable = var(literal);
-	activity[variable] += activityIncrement;
+	uint index = var(literal);
+	if (literal > 0) {
+		positiveLiteralActivity[index] += activityIncrement;
+	}
+	else {
+		negativeLiteralActivity[index] += activityIncrement;
+	}
 }
 
 //TODO document
@@ -239,10 +246,14 @@ int getNextDecisionLiteral() {
 	for (uint i = 1; i <= numVariables; ++i) {
 		// check only undefined variables
 		if (model[i] == UNDEFINED) {
-			// search for the most active variable
-			if (activity[i] >= maximumActivity) {
-				maximumActivity = activity[i];
+			// search for the most active literal
+			if (positiveLiteralActivity[i] >= maximumActivity) {
+				maximumActivity = positiveLiteralActivity[i];
 				mostActiveVariable = i;
+			}
+			if (negativeLiteralActivity[i] >= maximumActivity) {
+				maximumActivity = negativeLiteralActivity[i];
+				mostActiveVariable = -i;
 			}
 		}
 	}
