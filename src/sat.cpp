@@ -19,11 +19,8 @@ uint numClauses;
 /* Clauses and related data structures */
 vector<vector<int> > clauses;
 
-vector<vector<vector<int>* > > positiveOccurrences;
-vector<vector<vector<int>* > > negativeOccurrences;
-
-//FIXME vector<vector<int> > OLDpositiveClauses; //TODO what about storing pointers instead of indexes? access time should be reduced...
-//FIXME vector<vector<int> > OLDnegativeClauses;
+vector<vector<vector<int>* > > positiveClauses;
+vector<vector<vector<int>* > > negativeClauses;
 
 /* Model & backtrack stack */
 vector<int> model;
@@ -67,11 +64,8 @@ void initializeWithParsedInput() {
 	clauses.resize(numClauses);
 
 	// Initialize positive and negative appearances
-	positiveOccurrences.resize(numVariables + 1);
-	negativeOccurrences.resize(numVariables + 1);
-
-	//FIXME positiveClauses.resize(numVariables + 1);
-	//FIXME negativeClauses.resize(numVariables + 1);
+	positiveClauses.resize(numVariables + 1);
+	negativeClauses.resize(numVariables + 1);
 
 	// Read clauses
 	for (uint clause = 0; clause < numClauses; ++clause) {
@@ -82,12 +76,10 @@ void initializeWithParsedInput() {
 
 			// add to the list of positive-negative literals
 			if (literal > 0) {
-				positiveOccurrences[var(literal)].push_back((vector<int>*) &clauses[clause]);
-				//FIXME positiveClauses[var(literal)].push_back(clause);
+				positiveClauses[var(literal)].push_back((vector<int>*) &clauses[clause]);
 			}
 			else {
-				negativeOccurrences[var(literal)].push_back((vector<int> *) &clauses[clause]);
-				//FIXME negativeClauses[var(literal)].push_back(clause);
+				negativeClauses[var(literal)].push_back((vector<int> *) &clauses[clause]);
 			}
 		}
 	}
@@ -172,15 +164,13 @@ bool propagateGivesConflict() {
 
 		//traverse only positive/negative appearances
 		vector<vector<int>* > clausesToPropagate = literalToPropagate > 0 ?
-				negativeOccurrences[var(literalToPropagate)] :
-				positiveOccurrences[var(literalToPropagate)];
-				//FIXME negativeClauses[var(literalToPropagate)] :
-				//FIXME positiveClauses[var(literalToPropagate)];
+				negativeClauses[var(literalToPropagate)] :
+				positiveClauses[var(literalToPropagate)];
 
 		//traverse the clauses
 		for (uint i = 0; i < clausesToPropagate.size(); ++i) {
 			//retrieve the next clause
-			vector<int> clause = (vector<int>) *clausesToPropagate[i];//FIXME clauses[clausesToPropagate[i]];
+			vector<int> clause = (vector<int>) *clausesToPropagate[i];
 
 			//necessary variables initialization
 			bool isSomeLiteralTrue = false;
