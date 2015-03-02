@@ -142,12 +142,6 @@ void setLiteralToTrue(int literal) {
  * @param literal the literal which activity is to be updated
  */
 void updateActivityForLiteral(int literal) {
-	//update the activity increment if necessary (every X conflicts)
-	++conflicts;
-	if ((conflicts % activityIncrementUpdateRate) == 0) {
-		activityIncrement *= 1.1;
-	}
-
 	//update the activity of the literal (we are not distinguishing between positive
 	// and negative literals here)
 	uint index = var(literal);
@@ -156,6 +150,20 @@ void updateActivityForLiteral(int literal) {
 	}
 	else {
 		negativeLiteralActivity[index] += activityIncrement;
+	}
+}
+
+//TODO document
+void updateActivityForConflictingClause(const vector<int>& clause) {
+	//update the activity increment if necessary (every X conflicts)
+	++conflicts;
+	if ((conflicts % activityIncrementUpdateRate) == 0) {
+		activityIncrement *= 1.1;
+	}
+
+	//update activity for each literal
+	for (int i = 0; i < clause.size(); ++i) {
+		updateActivityForLiteral(clause[i]);
 	}
 }
 
@@ -197,7 +205,7 @@ bool propagateGivesConflict() {
 			}
 			if (not isSomeLiteralTrue and undefinedLiterals == 0) {
 				// A conflict has been found! All literals are false!
-				updateActivityForLiteral(literalToPropagate);
+				updateActivityForConflictingClause(clause);
 				return true;
 			}
 			else if (not isSomeLiteralTrue and undefinedLiterals == 1) {
