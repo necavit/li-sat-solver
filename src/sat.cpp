@@ -33,7 +33,7 @@ vector<double> positiveLiteralActivity;
 vector<double> negativeLiteralActivity;
 double activityIncrement;
 uint conflicts;
-int activityIncrementUpdateRate = 1000; //TODO is this strategy right? which value is best suited? IMPORTANT!!
+int activityIncrementUpdateRate = 10000000; //TODO is this strategy right? which value is best suited? IMPORTANT!!
 
 /* Statistics */
 uint propagations;
@@ -158,7 +158,11 @@ void updateActivityForConflictingClause(const vector<int>& clause) {
 	//update the activity increment if necessary (every X conflicts)
 	++conflicts;
 	if ((conflicts % activityIncrementUpdateRate) == 0) {
-		activityIncrement *= 1.1;
+		//decaying sum
+		for (int i = 1; i <= numVariables; ++i) {
+			positiveLiteralActivity[i] /= 2.0;
+			positiveLiteralActivity[i] /= 2.0;
+		}
 	}
 
 	//update activity for each literal
