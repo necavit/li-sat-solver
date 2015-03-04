@@ -2,7 +2,7 @@
 bin/
 
 # sample problems and results
-sample_problems/
+#sample_problems/
 results/
 
 # the original example source, as provided by our teachers
