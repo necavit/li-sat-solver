@@ -161,7 +161,7 @@ void updateActivityForConflictingClause(const vector<int>& clause) {
 		//decaying sum
 		for (int i = 1; i <= numVariables; ++i) {
 			positiveLiteralActivity[i] /= 2.0;
-			positiveLiteralActivity[i] /= 2.0;
+			negativeLiteralActivity[i] /= 2.0;
 		}
 	}
 
@@ -368,7 +368,9 @@ void checkUnitClauses() {
  * Main program. It reads the SAT problem from the stdin stream, checks unit clauses and
  * executes the DPLL algorithm.
  */
-int main() {
+int main(int argc, char **argv) {
+	activityIncrementUpdateRate = atoi(argv[1]);
+
 	// Read the problem file (available at the stdin stream) and
 	//  initialize the rest of necessary variables
 	initializeWithParsedInput();
