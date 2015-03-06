@@ -1,46 +1,119 @@
-#include <iostream>
-#include <fstream>
-#include <stdlib.h>
-#include <algorithm>
-#include <vector>
+#include <iostream> // I/O library
+#include <vector>   // vectors
+#include <stdlib.h> // needed to avoid "'uint' does not name a type" compiler errors
 using namespace std;
 
-//TODO object oriented SAT solver? performance issues? readability? maintainability? extensibility?
-
+/**
+ * Convenient value for the model data structure.
+ */
 #define UNDEFINED -1
+
+/**
+ * Convenient value for the model data structure.
+ */
 #define TRUE 1
+
+/**
+ * Convenient value for the model data structure.
+ */
 #define FALSE 0
+
+/**
+ * Marks that the next element in the backtrack stack is a decided literal.
+ */
 #define DECISION_MARK 0
 
-/* Global problem "sizes" */
+/**
+ * The amount that is added to the activity of a literal each time it is involved
+ * in a conflict.
+ */
+#define ACTIVITY_INCREMENT 1.0
+
+/**
+ * Default activity-based heuristic parameter. The activity of the literals will be
+ * halved every 1000 conflicts.
+ *
+ * @see getNextDecisionLiteral() and updateActivityForConflictingClause(...)
+ */
+#define ACT_INC_UPDATE_RATE 1000
+
+/**
+ * Silences the output of the program if set to true (parsing the program arguments)
+ */
+bool silentOutput = false;
+
+/**
+ * The number of variables of the satisfiability problem.
+ */
 uint numVariables;
+
+/**
+ * The number of clauses of the formula of the satisfiability problem.
+ */
 uint numClauses;
 
-/* Clauses and related data structures */
+/**
+ * The list of clauses of the problem.
+ */
 vector<vector<int> > clauses;
 
+/**
+ * The occurrence list of positive appearances for each value in the clause set.
+ */
 vector<vector<vector<int>* > > positiveClauses;
+
+/**
+ * The occurrence list of negative appearances for each value in the clause set.
+ */
 vector<vector<vector<int>* > > negativeClauses;
 
-/* Model & backtrack stack */
+/**
+ * The current model (interpretation) of the problem.
+ */
 vector<int> model;
+
+/**
+ * The stack that tracks the current execution state (the backtrack stack).
+ */
 vector<int> modelStack;
-uint indexOfNextLitToPropagate;
+
+/**
+ * An index indicating which is the next literal from the stack to be propagated.
+ */
+uint indexOfNextLiteralToPropagate;
+
+/**
+ * The current decision level of the DPLL algorithm.
+ */
 uint decisionLevel;
 
-/* Heuristic related variables */
+/**
+ * The activity (number of conflicts in which appears) for each positive literal.
+ */
 vector<double> positiveLiteralActivity;
-vector<double> negativeLiteralActivity;
-double activityIncrement;
-uint conflicts;
-int activityIncrementUpdateRate = 10000000; //TODO is this strategy right? which value is best suited? IMPORTANT!!
 
-/* Statistics */
+/**
+ * The activity (number of conflicts in which appears) for each negative literal.
+ */
+vector<double> negativeLiteralActivity;
+
+/**
+ * The total number of conflicts found during the DPLL execution.
+ */
+uint conflicts;
+
+/**
+ * The total number of propagations performed by the DPLL algorithm.
+ */
 uint propagations;
+
+/**
+ * The total number of literal decisions taken by the DPLL algorithm.
+ */
 uint decisions;
 
 /**
- * Returns the variable that this literal represents
+ * Returns the variable that this literal represents.
  */
 inline uint var(int literal) {
 	return abs(literal);
@@ -50,7 +123,7 @@ inline uint var(int literal) {
  * Reads the input problem file from the stdin stream and initializes
  * any remaining necessary data structures and variables.
  */
-void initializeWithParsedInput() {
+void parseInput() {
 	// Skip comments
 	char c = cin.get();
 	while (c == 'c') {
@@ -88,12 +161,11 @@ void initializeWithParsedInput() {
 	// Initialize the remaining necessary variables
 		// model and backtrack stack
 	model.resize(numVariables + 1, UNDEFINED);
-	indexOfNextLitToPropagate = 0;
+	indexOfNextLiteralToPropagate = 0;
 	decisionLevel = 0;
 		// heuristic
 	positiveLiteralActivity.resize(numVariables + 1, 0.0);
 	negativeLiteralActivity.resize(numVariables + 1, 0.0);
-	activityIncrement = 1.0;
 	conflicts = 0;
 		// statistics
 	propagations = 0;
@@ -101,10 +173,12 @@ void initializeWithParsedInput() {
 }
 
 /**
- * TODO comment
+ * Returns the current value of the given literal, evaluated in the current
+ * interpretation (model).
+ *
+ * @param literal the literal which value is requested
  */
-int valueForLiteral(int literal) {
-//TODO could this be faster? there is a lot of if-else branching here!
+int currentValueForLiteral(int literal) {
 	if (literal >= 0) {
 		return model[literal];
 	}
@@ -136,8 +210,7 @@ void setLiteralToTrue(int literal) {
 }
 
 /**
- * Updates the activity counter of the given literal. The activity increment
- * applied is also updated, in order to give more importance to recent activity.
+ * Updates the activity counter of the given literal.
  *
  * @param literal the literal which activity is to be updated
  */
@@ -146,38 +219,49 @@ void updateActivityForLiteral(int literal) {
 	// and negative literals here)
 	uint index = var(literal);
 	if (literal > 0) {
-		positiveLiteralActivity[index] += activityIncrement;
+		positiveLiteralActivity[index] += ACTIVITY_INCREMENT;
 	}
 	else {
-		negativeLiteralActivity[index] += activityIncrement;
+		negativeLiteralActivity[index] += ACTIVITY_INCREMENT;
 	}
 }
 
-//TODO document
+/**
+ * Updates the activity counters for all the literals in the given clause. The activity
+ * increment that is applied is also updated, in order to give more importance to recent activity.
+ *
+ * @param clause the clause which was involved in the most recent conflict
+ */
 void updateActivityForConflictingClause(const vector<int>& clause) {
 	//update the activity increment if necessary (every X conflicts)
 	++conflicts;
-	if ((conflicts % activityIncrementUpdateRate) == 0) {
+	if ((conflicts % ACT_INC_UPDATE_RATE) == 0) {
 		//decaying sum
-		for (int i = 1; i <= numVariables; ++i) {
+		for (uint i = 1; i <= numVariables; ++i) {
 			positiveLiteralActivity[i] /= 2.0;
 			negativeLiteralActivity[i] /= 2.0;
 		}
 	}
 
 	//update activity for each literal
-	for (int i = 0; i < clause.size(); ++i) {
+	for (uint i = 0; i < clause.size(); ++i) {
 		updateActivityForLiteral(clause[i]);
 	}
 }
 
-//TODO document
+/**
+ * Performs the Boolean Constraint Propagation algorithm, traversing the set of clauses
+ * for each literal that is to be propagated (in the model stack) and checking if a
+ * conflict has been found or if a clause is unit.
+ *
+ * @return true if a conflict was found while performing the propagation; false otherwise
+ */
 bool propagateGivesConflict() {
-	while (indexOfNextLitToPropagate < modelStack.size()) {
+	while (indexOfNextLiteralToPropagate < modelStack.size()) {
 		//retrieve the literal to "be propagated"
-		int literalToPropagate = modelStack[indexOfNextLitToPropagate];
+		int literalToPropagate = modelStack[indexOfNextLiteralToPropagate];
 		//move forward the "pointer" to the next literal that will be propagated
-		++indexOfNextLitToPropagate;
+		++indexOfNextLiteralToPropagate;
 
 		++propagations; //profiling purposes only
 
@@ -198,7 +282,7 @@ bool propagateGivesConflict() {
 
 			//traverse the clause
 			for (uint k = 0; not isSomeLiteralTrue and k < clause.size(); ++k) {
-				int value = valueForLiteral(clause[k]);
+				int value = currentValueForLiteral(clause[k]);
 				if (value == TRUE) {
 					isSomeLiteralTrue = true;
 				}
@@ -224,9 +308,10 @@ bool propagateGivesConflict() {
 	return false;
 }
 
-//TODO document
+/**
+ * Resets the model and model stack to the last decision level.
+ */
 void backtrack() {
-	//TODO could this backtrack be faster? backjump? (non chronological backtrack)
 	uint i = modelStack.size() - 1;
 	int literal = 0;
 	while (modelStack[i] != DECISION_MARK) { // 0 is the  mark
@@ -238,7 +323,7 @@ void backtrack() {
 	// at this point, literal is the last decision
 	modelStack.pop_back(); // remove the  mark
 	--decisionLevel;
-	indexOfNextLitToPropagate = modelStack.size();
+	indexOfNextLiteralToPropagate = modelStack.size();
 	setLiteralToTrue(-literal);  // reverse last decision
 }
 
@@ -252,7 +337,6 @@ void backtrack() {
  * variable is currently undefined
  */
 int getNextDecisionLiteral() {
-	++decisions; //profiling purpose only
 	double maximumActivity = 0.0;
 	int mostActiveVariable = 0; // in case no variable is undefined, it will not be modified
 	for (uint i = 1; i <= numVariables; ++i) {
@@ -279,14 +363,14 @@ int getNextDecisionLiteral() {
  * exits and prints the conflicting clause.
  */
 void checkmodel() {
-	for (int i = 0; i < numClauses; ++i) {
+	for (uint i = 0; i < numClauses; ++i) {
 		bool someTrue = false;
-		for (int j = 0; not someTrue and j < clauses[i].size(); ++j) {
-			someTrue = (valueForLiteral(clauses[i][j]) == TRUE);
+		for (uint j = 0; not someTrue and j < clauses[i].size(); ++j) {
+			someTrue = (currentValueForLiteral(clauses[i][j]) == TRUE);
 		}
 		if (not someTrue) {
 			cout << "Error in model, clause is not satisfied:";
-			for (int j = 0; j < clauses[i].size(); ++j) {
+			for (uint j = 0; j < clauses[i].size(); ++j) {
 				cout << clauses[i][j] << " ";
 			}
 			cout << endl;
@@ -302,19 +386,21 @@ void checkmodel() {
  * @param satisfiable whether the problem was found to be satisfiable or not
  */
 void exitWithSatisfiability(bool satisfiable) {
-	cout << "conflicts: " << conflicts << "  decisions: " << decisions << "  propagations:" << propagations << endl;
 	if (satisfiable) {
 		checkmodel();
-		cout << "SATISFIABLE" << endl;
+		cout << "SATISFIABLE," << decisions << "," << propagations << endl;
 		exit(20);
 	}
 	else {
-		cout << "UNSATISFIABLE" << endl;
+		cout << "UNSATISFIABLE," << decisions << "," << propagations << endl;
 		exit(10);
 	}
 }
 
-//TODO document
+/**
+ * Executes the DPLL (Davis–Putnam–Logemann–Loveland) algorithm, performing a full search
+ * for a model (interpretation) which satisfies the formula given as a CNF clause set.
+ */
 void executeDPLL() {
 	// DPLL algorithm
 	while (true) {
@@ -332,7 +418,7 @@ void executeDPLL() {
 		}
 		// start new decision level:
 		modelStack.push_back(DECISION_MARK);  // push mark indicating new
-		++indexOfNextLitToPropagate;
+		++indexOfNextLiteralToPropagate;
 		++decisionLevel;
 		setLiteralToTrue(decisionLit); // now push decisionLit on top of the mark
 	}
@@ -347,7 +433,7 @@ void checkUnitClauses() {
 	for (uint i = 0; i < numClauses; ++i) {
 		if (clauses[i].size() == 1) {
 			int literal = clauses[i][0];
-			int value = valueForLiteral(literal);
+			int value = currentValueForLiteral(literal);
 			if (value == FALSE) {
 				// This condition will only occur if at least a couple of unit clauses
 				//  exist with opposite literals (p and ¬p, for example). When the first
@@ -360,7 +446,6 @@ void checkUnitClauses() {
 				setLiteralToTrue(literal);
 			}
 		}
-		//TODO could unit clauses be "deleted"? (at least avoid their traversal further on)
 	}
 }
 
@@ -368,12 +453,10 @@ void checkUnitClauses() {
  * Main program. It reads the SAT problem from the stdin stream, checks unit clauses and
  * executes the DPLL algorithm.
  */
-int main(int argc, char **argv) {
-	activityIncrementUpdateRate = atoi(argv[1]);
-
+int main(int argc, char* argv[]) {
 	// Read the problem file (available at the stdin stream) and
 	//  initialize the rest of necessary variables
-	initializeWithParsedInput();
+	parseInput();
 
 	// Take care of initial unit clauses, if any
 	checkUnitClauses();

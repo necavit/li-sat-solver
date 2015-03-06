@@ -7,7 +7,7 @@ SRC_DIR=./src
 BIN_DIR=./bin
 BIN_NAME=sat
 CC=g++
-CFLAGS=-c -O3 -std=c++0x
+CFLAGS=-c -O3 -Wall
 
 all: sat
 
