@@ -11,10 +11,13 @@ BIN_FILE="$BIN_DIR/$BIN_NAME"
 
 function usage {
 	echo ""
-	echo "Usage: `basename $0` [compile | run PROBLEM_FILE [OUT_FILE]]"
+	echo "Usage: `basename $0` [compile | profile PROBLEM_FILE [OUT_FILE] | run PROBLEM_FILE [OUT_FILE]]"
 	echo ""
 	echo "Targets:"
 	echo "  compile: compiles the SAT solver project, producing an executable file at $BIN_DIR, and exits"
+	echo "  profile: runs the compiled SAT solver with the given input and output files. If no executable"
+	echo "           is found, the project is compiled as if the 'compile' target was called. The execution"
+	echo "           is timed by the 'time' command."
 	echo "      run: runs the compiled SAT solver with the given input and output files. If no executable"
 	echo "           is found, the project is compiled as if the 'compile' target was called."
 	echo ""
@@ -60,6 +63,33 @@ function run_sat {
   fi
 }
 
+function profile_sat {
+	# check if enough arguments are passed in
+	if [ "$#" -lt 2 ]; then
+		echo "ERROR: not enough parameters"
+		usage
+	fi
+
+	# check if the input problem file exists
+	if [ ! -f $2 ]; then
+		echo "ERROR: file '$2' not found or not a regular file"
+		usage
+	fi
+
+	# check if the executable file exists
+	if [ ! -x $BIN_FILE ]; then
+		compile
+	fi
+
+	echo "running SAT with the problem definition at '$2'..."
+  
+  if [ "$#" -eq 3 ]; then
+    (time $BIN_FILE < $2) &> $3
+  else
+    (time $BIN_FILE) < $2
+  fi
+}
+
 # make sure that executables will work in the current directory, without
 #  having to prepend './'
 export PATH=$PATH:.
@@ -69,6 +99,8 @@ export PATH=$PATH:.
 if [ "$1" = "compile" ]; then
 	compile
 	exit
+elif [ "$1" = "profile" ]; then
+	profile_sat $@
 elif [ "$1" = "run" ]; then
 	run_sat $@
 else
