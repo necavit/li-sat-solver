@@ -11,5 +11,5 @@ SAMPLES_DIR=$(cd "$SCRIPTPATH/sample_problems"; pwd)
 OUTPUT_DIR=$(cd "$SCRIPTPATH/output"; pwd)
 
 for FILE in $SAMPLES_DIR/*; do
-  ./sat.sh profile $SAMPLES_DIR/`basename $FILE` $OUTPUT_DIR/`basename $FILE`.out
+  ./sat.sh profile $SAMPLES_DIR/`basename $FILE` $OUTPUT_DIR/`basename $FILE .cnf`.out
 done

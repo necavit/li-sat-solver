@@ -1,0 +1,58 @@
+c PicoSAT SAT Solver Version 936
+c Copyright (c) 2006 - 2010 Armin Biere JKU Linz
+c gcc -Wall -Wextra -DNDEBUG -O3 -fomit-frame-pointer -finline-limit=1000000
+c
+c using 2 as default phase
+c
+c parsing /home/necavit/workspace_li/sat-solver/sample_problems/vars-150-7.cnf
+c parsed header 'p cnf 150 638'
+c initialized 150 variables
+c found 638 non trivial clauses
+c
+c random number generator seed 0
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c s   0.0   0.0   150   0.0   638     0     0     0   0.0   0.1 
+c 
+c initial reduction limit 319 clauses
+c 
+c +   0.0  15.3   150  96.7   638   100    99   350  11.2   0.1 
+c R   0.0  15.3   150  96.7   638   102   101   350  11.3   0.1 
+c +   0.0  12.8   150  98.7   638   250   249   385  20.8   0.1 
+c N   0.0  11.1   150  98.7   638   404   207   385  26.1   0.1 
+c +   0.0  10.5   150  99.3   638   475   278   423  28.0   0.1 
+c +   0.0   9.2   150 100.0   638   812   398   465  31.4   0.1 
+c N   0.0   8.1   149 100.0   638  1300   402   465  34.5   0.1 
+c +   0.0   8.1   149 100.0   638  1317   419   511  34.9   0.1 
+c N   0.0   7.8   149 100.0   631  1606   388   511  33.9   0.1 
+c N   0.0   7.6   148 100.0   620  1772   177   511  34.6   0.1 
+c N   0.0   7.5   147 100.0   620  1908   307   511  35.1   0.1 
+c +   0.0   7.3   147 100.0   620  2074   468   562  33.2   0.1 
+c 0   0.0   7.2    89 100.0   620  2152   525   562  33.1   0.1 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+s UNSATISFIABLE
+c
+c 9 iterations
+c 2 restarts
+c 2152 conflicts
+c 0 adc conflicts
+c 2505 decisions
+c 61 fixed variables
+c 16592 learned literals
+c 26.9% deleted literals
+c 86440 propagations
+c 100.0% variables used
+c 0.0 seconds in library
+c 5.4 megaprops/second
+c 1 simplifications
+c 6 reductions
+c 0.1 MB recycled
+c 0.1 MB maximally allocated
+c 0.0 seconds total run time
+Command exited with non-zero status 20
+0.01

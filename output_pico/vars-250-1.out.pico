@@ -1,0 +1,102 @@
+c PicoSAT SAT Solver Version 936
+c Copyright (c) 2006 - 2010 Armin Biere JKU Linz
+c gcc -Wall -Wextra -DNDEBUG -O3 -fomit-frame-pointer -finline-limit=1000000
+c
+c using 2 as default phase
+c
+c parsing /home/necavit/workspace_li/sat-solver/sample_problems/vars-250-1.cnf
+c parsed header 'p cnf 250 1063'
+c initialized 250 variables
+c found 1063 non trivial clauses
+c
+c random number generator seed 0
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c s   0.0   0.0   250   0.0  1063     0     0     0   0.0   0.1 
+c 
+c initial reduction limit 531 clauses
+c 
+c +   0.0  27.9   250  89.6  1063   100   100   584  12.2   0.1 
+c R   0.0  27.9   250  89.6  1063   100   100   584  12.2   0.1 
+c +   0.0  22.0   250  96.4  1063   250   250   642  22.8   0.1 
+c N   0.0  19.1   250  98.0  1063   401   401   642  26.8   0.2 
+c +   0.0  18.1   250  98.4  1063   475   475   706  28.2   0.2 
+c +   0.0  16.1   250  99.2  1063   812   456   776  29.8   0.2 
+c N   0.0  15.1   250  99.6  1063  1204   455   776  31.2   0.2 
+c +   0.0  15.1   250  99.6  1063  1317   568   853  31.2   0.2 
+c +   0.0  14.4   250  99.6  1063  2074   459   938  29.9   0.2 
+c N   0.0  13.5   250 100.0  1063  3206   641   938  31.2   0.2 
+c +   0.0  13.5   250 100.0  1063  3209   644  1031  31.3   0.2 
+c +   0.0  12.5   250 100.0  1063  4911   785  1134  31.7   0.2 
+c +   0.1  11.9   250 100.0  1063  7464  1050  1247  31.3   0.2 
+c N   0.1  11.7   250 100.0  1063  8020   979  1247  31.2   0.2 
+c +   0.1  11.2   250 100.0  1063 11293  1109  1371  31.0   0.2 
+c +   0.2  10.8   250 100.0  1063 17036  1322  1508  30.3   0.3 
+c N   0.2  10.7   250 100.0  1063 19249  1255  1508  30.6   0.3 
+c +   0.3  10.6   250 100.0  1063 25650   819  1658  31.8   0.2 
+c s   0.3  10.2   249 100.0  1054 31640   590  1658  30.4   0.2 
+c N   0.3  10.2   249 100.0  1054 31741   691  1658  29.5   0.2 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c N   0.3  10.3   249 100.0  1054 32042   992  1658  29.5   0.2 
+c N   0.4  10.3   249 100.0  1054 32843   959  1658  30.7   0.2 
+c N   0.4  10.4   249 100.0  1054 34854  1301  1658  30.5   0.3 
+c +   0.4  10.4   249 100.0  1054 38571   844  1823  30.6   0.2 
+c N   0.4  10.5   249 100.0  1054 39671  1028  1823  29.0   0.2 
+c N   0.6  10.5   249 100.0  1054 50896  1244  1823  30.1   0.3 
+c +   0.7  10.5   249 100.0  1054 57952   958  2005  29.1   0.2 
+c s   0.7  10.3   248 100.0  1050 65385   879  2005  30.7   0.2 
+c N   0.7  10.3   248 100.0  1050 65486   980  2005  29.7   0.2 
+c N   0.7  10.3   248 100.0  1050 65788  1282  2005  31.1   0.3 
+c N   0.8  10.3   248 100.0  1050 66590  1077  2005  29.6   0.2 
+c N   0.8  10.2   248 100.0  1050 68593  1063  2005  29.7   0.2 
+c s   0.8  10.2   247 100.0  1039 70005   605  2005  31.3   0.2 
+c N   0.8  10.2   247 100.0  1039 70105   705  2005  29.8   0.2 
+c N   0.8  10.2   247 100.0  1039 70406  1006  2005  29.4   0.2 
+c N   0.8  10.2   247 100.0  1039 71206  1806  2005  30.3   0.3 
+c N   0.8  10.1   247 100.0  1039 73216  1797  2005  29.8   0.3 
+c s   0.8  10.1   245 100.0  1022 73716   585  2005  30.7   0.2 
+c N   0.8  10.1   245 100.0  1022 73817   686  2005  31.9   0.2 
+c N   0.8  10.1   245 100.0  1022 74118   987  2005  31.1   0.2 
+c N   0.8  10.1   245 100.0  1022 74919  1788  2005  30.4   0.3 
+c N   0.9  10.1   243 100.0  1022 76308  1151  2005  29.8   0.2 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c N   0.9  10.1   243 100.0  1022 76609  1452  2005  31.0   0.3 
+c s   0.9  10.0   243 100.0  1005 76852  1150  2005  30.7   0.2 
+c N   0.9  10.0   240 100.0  1005 77162  1453  2005  31.7   0.3 
+c N   0.9  10.0   239 100.0  1005 77297  1581  2005  30.0   0.3 
+c N   0.9  10.0   239 100.0  1005 77597  1879  2005  30.9   0.3 
+c N   0.9  10.0   238 100.0  1005 77716  1995  2005  30.2   0.3 
+c 0   0.9  10.0   169 100.0   959 77839   567  2005  29.8   0.2 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+s UNSATISFIABLE
+c
+c 12 iterations
+c 2 restarts
+c 77839 conflicts
+c 0 adc conflicts
+c 91049 decisions
+c 81 fixed variables
+c 903464 learned literals
+c 28.2% deleted literals
+c 4394739 propagations
+c 100.0% variables used
+c 0.9 seconds in library
+c 5.0 megaprops/second
+c 6 simplifications
+c 92 reductions
+c 8.9 MB recycled
+c 0.3 MB maximally allocated
+c 0.9 seconds total run time
+Command exited with non-zero status 20
+0.88

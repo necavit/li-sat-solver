@@ -1,0 +1,59 @@
+c PicoSAT SAT Solver Version 936
+c Copyright (c) 2006 - 2010 Armin Biere JKU Linz
+c gcc -Wall -Wextra -DNDEBUG -O3 -fomit-frame-pointer -finline-limit=1000000
+c
+c using 2 as default phase
+c
+c parsing /home/necavit/workspace_li/sat-solver/sample_problems/vars-150-10.cnf
+c parsed header 'p cnf 150 638'
+c initialized 150 variables
+c found 638 non trivial clauses
+c
+c random number generator seed 0
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c s   0.0   0.0   150   0.0   638     0     0     0   0.0   0.1 
+c 
+c initial reduction limit 319 clauses
+c 
+c +   0.0  17.7   150  95.3   638   100   100   350   9.4   0.1 
+c R   0.0  17.7   150  95.3   638   100   100   350   9.4   0.1 
+c +   0.0  12.9   150  99.3   638   250   250   385  21.3   0.1 
+c N   0.0  11.4   150 100.0   638   401   205   385  25.8   0.1 
+c +   0.0  10.9   150 100.0   638   475   279   423  27.1   0.1 
+c +   0.0   9.4   150 100.0   638   812   400   465  31.5   0.1 
+c N   0.0   8.9   150 100.0   638  1206   323   465  31.3   0.1 
+c +   0.0   8.8   150 100.0   638  1317   433   511  31.9   0.1 
+c N   0.0   8.3   149 100.0   628  1972   197   511  33.0   0.1 
+c +   0.0   8.2   149 100.0   628  2074   299   562  33.1   0.1 
+c N   0.0   8.1   149 100.0   628  2274   496   562  33.1   0.1 
+c N   0.0   7.9   148 100.0   620  2440   264   562  32.1   0.1 
+c N   0.0   7.8   147 100.0   620  2627   443   562  33.3   0.1 
+c 0   0.0   7.7    91 100.0   620  2707   507   562  33.3   0.1 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+s UNSATISFIABLE
+c
+c 8 iterations
+c 2 restarts
+c 2707 conflicts
+c 0 adc conflicts
+c 3142 decisions
+c 59 fixed variables
+c 22197 learned literals
+c 26.3% deleted literals
+c 112474 propagations
+c 100.0% variables used
+c 0.0 seconds in library
+c 5.6 megaprops/second
+c 1 simplifications
+c 8 reductions
+c 0.2 MB recycled
+c 0.1 MB maximally allocated
+c 0.0 seconds total run time
+Command exited with non-zero status 20
+0.02

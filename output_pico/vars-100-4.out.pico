@@ -1,0 +1,51 @@
+c PicoSAT SAT Solver Version 936
+c Copyright (c) 2006 - 2010 Armin Biere JKU Linz
+c gcc -Wall -Wextra -DNDEBUG -O3 -fomit-frame-pointer -finline-limit=1000000
+c
+c using 2 as default phase
+c
+c parsing /home/necavit/workspace_li/sat-solver/sample_problems/vars-100-4.cnf
+c parsed header 'p cnf 100 425'
+c initialized 100 variables
+c found 425 non trivial clauses
+c
+c random number generator seed 0
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c s   0.0   0.0   100   0.0   425     0     0     0   0.0   0.0 
+c 
+c initial reduction limit 212 clauses
+c 
+c +   0.0  11.3   100  98.0   425   100   100   233   8.2   0.0 
+c R   0.0  11.3   100  98.0   425   102   102   233   8.3   0.0 
+c +   0.0   9.5   100 100.0   425   250   132   256  18.1   0.1 
+c N   0.0   8.0    99 100.0   416   421   119   256  24.7   0.1 
+c +   0.0   7.7    98 100.0   416   475   167   281  26.8   0.1 
+c 0   0.0   7.1    36 100.0   336   611    27   281  30.1   0.0 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+s UNSATISFIABLE
+c
+c 8 iterations
+c 2 restarts
+c 611 conflicts
+c 0 adc conflicts
+c 729 decisions
+c 64 fixed variables
+c 3857 learned literals
+c 19.7% deleted literals
+c 18845 propagations
+c 100.0% variables used
+c 0.0 seconds in library
+c 4.7 megaprops/second
+c 1 simplifications
+c 3 reductions
+c 0.0 MB recycled
+c 0.1 MB maximally allocated
+c 0.0 seconds total run time
+Command exited with non-zero status 20
+0.00
