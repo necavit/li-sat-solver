@@ -337,6 +337,7 @@ void backtrack() {
  * variable is currently undefined
  */
 int getNextDecisionLiteral() {
+	++decisions; //profiling purposes only
 	double maximumActivity = 0.0;
 	int mostActiveVariable = 0; // in case no variable is undefined, it will not be modified
 	for (uint i = 1; i <= numVariables; ++i) {

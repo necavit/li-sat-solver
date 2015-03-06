@@ -11,7 +11,7 @@ BIN_FILE="$BIN_DIR/$BIN_NAME"
 
 function usage {
 	echo ""
-	echo "Usage: `basename $0` [compile | run PROBLEM_FILE OUT_FILE]"
+	echo "Usage: `basename $0` [compile | run PROBLEM_FILE [OUT_FILE]]"
 	echo ""
 	echo "Targets:"
 	echo "  compile: compiles the SAT solver project, producing an executable file at $BIN_DIR, and exits"
@@ -30,14 +30,12 @@ function compile {
 	echo "compiling SAT..."
 	make BIN_DIR=$BIN_DIR BIN_NAME=$BIN_NAME
 	echo ""
-	echo "Done: SAT solver executable is in $BIN_DIR"
-	echo ""
 	popd > /dev/null
 }
 
 function run_sat {
 	# check if enough arguments are passed in
-	if [ "$#" -lt 3 ]; then
+	if [ "$#" -lt 2 ]; then
 		echo "ERROR: not enough parameters"
 		usage
 	fi
@@ -54,12 +52,12 @@ function run_sat {
 	fi
 
 	echo "running SAT with the problem definition at '$2'..."
-
-	$BIN_FILE < $2 > $3
-
-	echo ""
-	echo "Done: the result was written to the file '$3'"
-	echo ""
+  
+  if [ "$#" -eq 3 ]; then
+    $BIN_FILE < $2 > $3
+  else
+    $BIN_FILE < $2
+  fi
 }
 
 # make sure that executables will work in the current directory, without
