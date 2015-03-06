@@ -8,7 +8,7 @@ popd > /dev/null
 BIN_DIR=$(cd "$SCRIPTPATH/bin"; pwd)
 BIN_NAME="sat"
 BIN_FILE="$BIN_DIR/$BIN_NAME"
-TIME_FORMAT=""e""
+TIME_FORMAT="%e"
 
 function usage {
 	echo ""
@@ -85,9 +85,9 @@ function profile_sat {
 	echo "running SAT with the problem definition at '$2'..."
   
   if [ "$#" -eq 3 ]; then
-    (time -f $TIME_FORMAT $BIN_FILE < $2) &> $3
+    (/usr/bin/time -f $TIME_FORMAT $BIN_FILE < $2) &> $3
   else
-    (time -f $TIME_FORMAT $BIN_FILE) < $2
+    (/usr/bin/time -f $TIME_FORMAT $BIN_FILE) < $2
   fi
 }
 
