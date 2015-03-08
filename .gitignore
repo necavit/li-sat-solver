@@ -1,15 +1,8 @@
 # binaries are ignored
 bin/
 
-# sample problems and results
-#sample_problems/
-results/
-
 # the original example source, as provided by our teachers
 example-src/
-
-# symlinked script, just for convenience
-sat
 
 # eclipse related stuff
 .cproject
